@@ -3,6 +3,17 @@ import time
 import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime
+import base64
+
+# ---- Helper function for beep ----
+def beep_sound():
+    # Simple beep in .wav format (encoded)
+    beep_wav = (
+        b"UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQgAAAAA"
+        b"//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA"
+    )
+    b64 = base64.b64encode(beep_wav).decode("utf-8")
+    st.audio(f"data:audio/wav;base64,{b64}", format="audio/wav")
 
 # ---- SESSION STATE ----
 if "logs" not in st.session_state:
@@ -23,13 +34,27 @@ if st.button("▶️ Start Study Session"):
 
     countdown_placeholder = st.empty()
 
+    # ---- Study Countdown ----
     total_seconds = session_length * 60
     for remaining in range(total_seconds, 0, -1):
         mins, secs = divmod(remaining, 60)
-        countdown_placeholder.metric("⏳ Time Remaining", f"{mins:02}:{secs:02}")
+        countdown_placeholder.metric("📖 Study Time Remaining", f"{mins:02}:{secs:02}")
         time.sleep(1)
 
+    st.success("✅ Study Session Completed! Time for a break.")
+    beep_sound()
     end_time = datetime.now()
+
+    # ---- Break Countdown ----
+    break_placeholder = st.empty()
+    break_seconds = break_length * 60
+    for remaining in range(break_seconds, 0, -1):
+        mins, secs = divmod(remaining, 60)
+        break_placeholder.metric("☕ Break Time Remaining", f"{mins:02}:{secs:02}")
+        time.sleep(1)
+
+    st.success("🎉 Break Over! Ready for your next session?")
+    beep_sound()
 
     # Log session
     st.session_state.logs.append({
@@ -39,7 +64,7 @@ if st.button("▶️ Start Study Session"):
         "duration": session_length,
         "break": break_length
     })
-    st.success("✅ Session Completed! Take a break.")
+
 # ---- SHOW LOGS ----
 if st.session_state.logs:
     df = pd.DataFrame(st.session_state.logs)
@@ -79,4 +104,3 @@ if st.session_state.logs:
         st.error("😴 No study logged yet today. Let's get started!")
 else:
     st.info("No sessions logged yet. Start your first study session!")
-
