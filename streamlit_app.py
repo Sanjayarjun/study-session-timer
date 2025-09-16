@@ -20,7 +20,15 @@ break_length = st.sidebar.number_input("Break Length (minutes)", min_value=1, va
 if st.button("▶️ Start Study Session"):
     st.success(f"Study session started for {session_length} minutes!")
     start_time = datetime.now()
-    time.sleep(2)  # Just simulating timer (not real countdown for now)
+
+    countdown_placeholder = st.empty()
+
+    total_seconds = session_length * 60
+    for remaining in range(total_seconds, 0, -1):
+        mins, secs = divmod(remaining, 60)
+        countdown_placeholder.metric("⏳ Time Remaining", f"{mins:02}:{secs:02}")
+        time.sleep(1)
+
     end_time = datetime.now()
 
     # Log session
@@ -32,7 +40,6 @@ if st.button("▶️ Start Study Session"):
         "break": break_length
     })
     st.success("✅ Session Completed! Take a break.")
-
 # ---- SHOW LOGS ----
 if st.session_state.logs:
     df = pd.DataFrame(st.session_state.logs)
